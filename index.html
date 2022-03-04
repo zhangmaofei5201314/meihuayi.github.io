@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>梅花易</title>
+    <style type="text/css">
+        body {
+            margin-left: 40%;
+        }
+
+        input {
+            width: 150px;
+            height: 30px;
+            line-height: 30px;
+        }
+
+        .show {
+            border: 3px solid black;
+            margin-top: 12px;
+            width: 35%;
+            text-align: center;
+        }
+
+        .mt10 {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="mt10">
+        <span>上</span>
+        <input id="upNums" type="number" placeholder="要获取的输入的值"/>
+    </div>
+    <div class="mt10">
+        <span>下</span>
+        <input id="downNums" type="number" placeholder="要获取的输入的值"/>
+    </div>
+    <div class="mt10">
+        <spanp>变</spanp>
+        <input id="changeNums" type="number" placeholder="要获取的输入的值"/>
+    </div>
+    <div class="mt10">
+        <input id="yi" value="按钮" type="button" onclick="f2()"
+               style="width: 100px; height: 50px; background-color: white"/>
+        <input id="yi2" value="重置" type="button" onclick="f3()"
+               style="width: 100px; height: 50px; margin-left: 20px; background-color: black; color: white "/>
+    </div>
+</div>
+<div class="show">
+    <h3>本卦</h3>
+    <p id="jieguotu"></p>
+    <p id="jieguozi"></p>
+</div>
+<div class="show">
+    <h3>变卦</h3>
+    <p id="bianjieguotu"></p>
+    <p id="bianjieguozi"></p>
+</div>
+<div class="show">
+    <h3>互卦</h3>
+    <p id="hujieguotu"></p>
+    <p id="hujieguozi"></p>
+</div>
+<!--<canvas id="box" width='800' height='800'></canvas>-->
+<script type="text/javascript">
+
+    var xiantian = {
+        "A": "乾-金",
+        "B": "兑-金",
+        "C": "离-火",
+        "D": "震-木",
+        "E": "巽-木",
+        "F": "坎-水",
+        "G": "艮-土",
+        "H": "坤-土",
+    }
+    var guaArr = ['H', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    var guaXiang = {
+        'A': [1, 1, 1],
+        'B': [0, 1, 1],
+        'C': [1, 0, 1],
+        'D': [0, 0, 1],
+        'E': [1, 1, 0],
+        'F': [0, 1, 0],
+        'G': [1, 0, 0],
+        'H': [0, 0, 0]
+    };
+    var yinYang = {
+        0: "—&nbsp&nbsp&nbsp—",
+        1: "———"
+    }
+
+    function f3() {
+        document.getElementById("upNums").value = '';
+        document.getElementById("downNums").value = '';
+        document.getElementById("changeNums").value = '';
+
+        let idArr = ['jieguotu', 'jieguozi', 'bianjieguotu', 'bianjieguozi', 'hujieguotu', 'hujieguozi'];
+        for (let a in idArr) {
+            document.getElementById(idArr[a]).innerHTML = '';
+        }
+    }
+
+    function f2() {
+        let up = document.getElementById("upNums").value;
+        let down = document.getElementById("downNums").value;
+        let change = document.getElementById("changeNums").value;
+
+        if (up && down && change) {
+            up = parseInt(up);
+            down = parseInt(down);
+            change = parseInt(change);
+            if (up >= 0 && down >= 0 && change >= 0) {
+
+                console.log('起卦')
+                f1(up, down, change)
+            }
+        }
+
+        // console.log(typeof up)
+        // console.log(up<0)
+        // f1(up, down, change)
+    }
+
+    function f1(upNum, downNum, changeNum) {
+        // upNum = 34;
+        // downNum=43;
+        // changeNum=43;
+        //梅花易取值
+        let upIndex = upNum % 8;
+        let downIndex = downNum % 8;
+        let changeIndex = changeNum % 6;
+
+        //本卦之上卦
+        let shangGua = guaArr[upIndex];
+        //本卦之下卦
+        let xiaGua = guaArr[downIndex];
+
+        //本卦之上卦卦象
+        let shangGuaXiang = guaXiang[shangGua];
+        //本卦之下卦卦象
+        let xiaGuaXiang = guaXiang[xiaGua];
+
+        //本卦卦象
+        let benGua = shangGuaXiang.concat(xiaGuaXiang);
+
+        //变卦(深拷贝)
+        let bianGua = JSON.parse(JSON.stringify(benGua));
+        bianGua.reverse();//反转
+
+        if (changeIndex === 0) {
+            bianGua[5] = 1 === bianGua[5] ? 0 : 1;
+        } else {
+            bianGua[changeIndex - 1] = 1 === bianGua[changeIndex - 1] ? 0 : 1;
+        }
+        bianGua.reverse();
+
+        //互卦
+        let huGua = [];
+        huGua.push(benGua[1]);
+        huGua.push(benGua[2]);
+        huGua.push(benGua[3]);
+        huGua.push(benGua[2]);
+        huGua.push(benGua[3]);
+        huGua.push(benGua[4]);
+
+        console.log("本卦", benGua)
+        console.log("变卦", bianGua)
+        console.log("互卦", huGua)
+
+        //象形转义
+        let benGuaZ = tu(benGua);
+        console.log(benGuaZ)
+
+        //本卦展示
+        document.getElementById("jieguotu").innerHTML = benGuaZ;
+        let jiegzi = "上卦：" + xiantian[shangGua] + "，下卦：" + xiantian[xiaGua];
+        document.getElementById("jieguozi").innerHTML = jiegzi;
+
+        //变卦展示
+        let bianGuaZ = tu(bianGua);
+        document.getElementById("bianjieguotu").innerHTML = bianGuaZ;
+        let bianGuaUp = bianGua.slice(0, 3);
+        let bianGuaDowm = bianGua.slice(3, 6);
+        // let a = findKey([1,1,1])
+        let bianjiegzi = "上卦：" + xiantian[findKey(bianGuaUp)] + "，下卦：" + xiantian[findKey(bianGuaDowm)];
+        document.getElementById("bianjieguozi").innerHTML = bianjiegzi;
+
+        //互卦展示
+        let huGuaZ = tu(huGua);
+        document.getElementById("hujieguotu").innerHTML = huGuaZ;
+        let huGuaUp = huGua.slice(0, 3);
+        let huGuaDowm = huGua.slice(3, 6);
+        // let a = findKey([1,1,1])
+        let hujiegzi = "上卦：" + xiantian[findKey(huGuaUp)] + "，下卦：" + xiantian[findKey(huGuaDowm)];
+        document.getElementById("hujieguozi").innerHTML = hujiegzi;
+
+    }
+
+    //象形转义
+    function tu(gua) {
+        let tu = "";
+        for (let num in gua) {
+            tu = tu + yinYang[gua[num]] + "<br>"
+        }
+        return tu;
+    }
+
+    function findKey(value, compare = (a, b) => a.toString() === b.toString()) {
+        return Object.keys(guaXiang).find(k => compare(guaXiang[k], value))
+    }
+
+</script>
+<script>
+    var c = document.querySelector('#box') //先获取canvas元素
+    var ctx = c.getContext('2d')  //创建 context 对象
+    ctx.translate(400, 400)
+    setInterval(function () {
+        //黑色半圆
+        ctx.rotate(Math.PI / 180)
+        ctx.beginPath()
+        ctx.arc(0, 0, 250, 0, Math.PI, false)
+        ctx.closePath()
+        ctx.fill()
+        //四分之一处黑色整圆
+        ctx.beginPath()
+        ctx.arc(-125, 0, 125, 0, Math.PI * 2, true)
+        ctx.closePath()
+        ctx.fillStyle = "black"
+        ctx.fill()
+        // 四分之三处白色整圆
+        ctx.beginPath()
+        ctx.arc(125, 0, 125, 0, Math.PI * 2, false)
+        ctx.closePath()
+        ctx.fillStyle = "#fff"
+        ctx.fill()
+        //在绘制整圆
+        ctx.beginPath()
+        ctx.arc(-125, 0, 50, 0, Math.PI * 2, true)
+        ctx.closePath()
+        ctx.fillStyle = "#fff"
+        ctx.fill()
+        //在绘制整圆
+        ctx.beginPath()
+        ctx.arc(125, 0, 50, 0, Math.PI * 2, false)
+        ctx.closePath()
+        ctx.fillStyle = "black"
+        ctx.fill()
+    }, 10)
+</script>
+</body>
+</html>
